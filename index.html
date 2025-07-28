@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IntersectionObserver API デモ - フェードインアニメーション</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .hero {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      color: white;
+      margin-bottom: 1rem;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .content {
+      background: white;
+      padding: 100px 0;
+    }
+
+    .section {
+      margin-bottom: 150px;
+    }
+
+    .section h2 {
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      color: #333;
+    }
+
+    .card {
+      background: white;
+      border-radius: 15px;
+      padding: 3rem;
+      margin: 2rem 0;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e1e8ed;
+    }
+
+    .card h3 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      color: #667eea;
+    }
+
+    .card p {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: #666;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin: 3rem 0;
+    }
+
+    .feature {
+      text-align: center;
+      padding: 2rem;
+      background: #f8f9fa;
+      border-radius: 10px;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .feature:hover {
+      border-color: #667eea;
+      transform: translateY(-5px);
+    }
+
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    /* フェードアップアニメーション */
+    .js-fadeinup {
+      opacity: 0;
+      transform: translateY(50px);
+      transition: all 0.8s ease-out;
+    }
+
+    .js-fadeinup.is-show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* 遅延アニメーション */
+    .js-fadeinup.delay-1 {
+      transition-delay: 0.1s;
+    }
+
+    .js-fadeinup.delay-2 {
+      transition-delay: 0.2s;
+    }
+
+    .js-fadeinup.delay-3 {
+      transition-delay: 0.3s;
+    }
+
+    .footer {
+      background: #333;
+      color: white;
+      text-align: center;
+      padding: 3rem 0;
+    }
+
+
+
+    /* ページトップボタン */
+    .pagetop {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 60px;
+      height: 60px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .pagetop:hover {
+      background: #5a67d8;
+      transform: translateY(15px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .pagetop.is-show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2rem;
+      }
+      
+      .card {
+        padding: 2rem;
+      }
+      
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .pagetop {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="hero" id="js-mv">
+    <div class="container">
+      <h1>IntersectionObserver API</h1>
+      <p>スクロールでフェードインアニメーションを体験してください</p>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="container">
+      
+      <section class="section">
+        <h2 class="js-fadeinup">スクロールアニメーション</h2>
+        <div class="card js-fadeinup delay-1">
+          <h3>IntersectionObserver APIとは？</h3>
+          <p>IntersectionObserver APIは、要素がビューポートに交差するタイミングを効率的に監視できるWeb APIです。スクロールイベントを使わずに、パフォーマンスの良いスクロールアニメーションを実装できます。</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="js-fadeinup">主な特徴</h2>
+        <div class="grid">
+          <div class="feature js-fadeinup delay-1">
+            <div class="feature-icon">🚀</div>
+            <h3>高パフォーマンス</h3>
+            <p>メインスレッドをブロックせず、効率的な監視が可能</p>
+          </div>
+          <div class="feature js-fadeinup delay-2">
+            <div class="feature-icon">🎯</div>
+            <h3>正確な判定</h3>
+            <p>要素の交差状態を正確に検知</p>
+          </div>
+          <div class="feature js-fadeinup delay-3">
+            <div class="feature-icon">⚙️</div>
+            <h3>柔軟な設定</h3>
+            <p>閾値やマージンを自由に設定可能</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="js-fadeinup">使用例</h2>
+        <div class="card js-fadeinup delay-1">
+          <h3>画像の遅延読み込み</h3>
+          <p>ページ読み込み時のパフォーマンスを向上させるため、画面に表示されるタイミングで画像を読み込む実装に使用されます。</p>
+        </div>
+        <div class="card js-fadeinup delay-2">
+          <h3>無限スクロール</h3>
+          <p>SNSやECサイトでよく見る無限スクロール機能の実装に活用できます。ページ下部に到達したタイミングで新しいコンテンツを読み込みます。</p>
+        </div>
+        <div class="card js-fadeinup delay-3">
+          <h3>アニメーション制御</h3>
+          <p>このデモのように、要素が画面に表示されるタイミングでアニメーションを開始する実装に最適です。</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="js-fadeinup">実装のポイント</h2>
+        <div class="card js-fadeinup delay-1">
+          <h3>オプション設定</h3>
+          <p>rootMargin: ビューポートのマージンを設定<br>
+          threshold: 交差の閾値を設定<br>
+          root: 監視の基準となる要素を設定</p>
+        </div>
+        <div class="card js-fadeinup delay-2">
+          <h3>コールバック関数</h3>
+          <p>isIntersecting プロパティで交差状態を判定し、適切なアクションを実行します。複数の要素を同時に監視することも可能です。</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="js-fadeinup">ブラウザサポート</h2>
+        <div class="grid">
+          <div class="feature js-fadeinup delay-1">
+            <div class="feature-icon">✅</div>
+            <h3>Chrome</h3>
+            <p>58+ でサポート</p>
+          </div>
+          <div class="feature js-fadeinup delay-2">
+            <div class="feature-icon">✅</div>
+            <h3>Firefox</h3>
+            <p>55+ でサポート</p>
+          </div>
+          <div class="feature js-fadeinup delay-3">
+            <div class="feature-icon">✅</div>
+            <h3>Safari</h3>
+            <p>12.1+ でサポート</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <footer class="footer" id="js-footer">
+    <div class="container">
+      <p class="js-fadeinup">&copy; 2024 IntersectionObserver API デモ</p>
+    </div>
+  </footer>
+
+  <button id="js-pagetop" class="pagetop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+    ↑
+  </button>
+
+  <script src="fadein.js"></script>
+  <script src="pagetop.js"></script>
+</body>
+</html>
